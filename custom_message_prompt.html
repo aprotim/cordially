@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <style>
+      .hidden {display: none;}
+    </style>
+
+  </head>
+  <body>
+    <script>
+    function showChoices(id) {
+      document.querySelectorAll('.choices').forEach(function (el) {el.classList.add('hidden')});
+      document.querySelector('#choices' + id).classList.remove('hidden');
+    }
+    
+    function toggleTestEmail(el) {
+      var testEmailElement = document.querySelector('#test_email_inputs');
+      if (el.checked) {
+        testEmailElement.classList.remove('hidden');
+      } else {
+        testEmailElement.classList.add('hidden');
+      }
+    }
+    
+    function fakeRadio(el) {
+      if (el.checked) {
+        var prefix = el.id.substring(0, el.id.lastIndexOf('_'));
+        ['yes', 'no', 'maybe'].forEach(
+          function (ans) {
+            var id = prefix + '_' + ans;
+            if (id !== el.id) {
+              document.querySelector("#" + id).checked = false;
+            }
+          });
+      }
+    }
+    
+    function handleSubmit(formObj) {
+      google.script.run.withSuccessHandler(google.script.host.close).customMessageHandler(formObj);
+    }
+
+    
+    // Prevent forms from submitting.
+    function preventFormSubmit() {
+      var forms = document.querySelectorAll('form');
+      for (var i = 0; i < forms.length; i++) {
+        forms[i].addEventListener('submit', function(event) {
+          event.preventDefault();
+        });
+      }
+    }
+    window.addEventListener('load', preventFormSubmit);
+
+    </script>
+
+    <form onsubmit="handleSubmit(this);">
+    <h1>Custom Email</h1>
+    <div>
+      <input type="checkbox" id="test_toggle" onclick="toggleTestEmail(this)" />
+      <label for="test_toggle">Send Test Email?</label>
+      <div id="test_email_inputs" class="hidden">
+      <input type="email" name="test_email_address" />
+      </div>
+    </div>
+    <div>
+      <b>Send messages based on answer to:</b><br/>
+      <? for (var i in items) { ?>
+        <input type="radio" id="<?= items[i].getId() ?>" name="question" value="<?= items[i].getId() ?>" onclick="showChoices(<?= items[i].getId() ?>)">
+        <label for="<?= items[i].getId() ?>"><?= items[i].getTitle() ?></label><br />
+      <? } ?>
+    </div>
+    <? for (var i in items) { ?>
+      <div id="choices<?= items[i].getId() ?>" class="choices hidden">
+      <b>Send to users who replied:</b><br/>
+      <? var choices = items[i].getChoices(); ?>
+      <? for (var c in choices) { ?>
+        <input type="checkbox" name="allowed_responses" id="answer_<?= items[i].getId() ?>_<?= c ?>" value="<?= choices[c].getValue() ?>"/>
+        <label for="answer_<?= items[i].getId() ?>_<?= c ?>">"<?= choices[c].getValue() ?>"</label><br>
+      <? } ?>
+      <input type="checkbox" name="allowed_responses" id="answer_<?= items[i].getId() ?>_none" value=""/>
+      <label for="answer_<?= items[i].getId() ?>_none">(none)</label><br>
+      </div>
+    <? } ?>
+    <hr/>
+    <div>
+      <b>Subject line:</b> <input type="text" name="subject" />
+    </div>
+    <div>
+      <b>Message body:</b><br/>
+      <textarea name="message" style="width:100%;"></textarea>
+    </div>
+    <div>
+      <input type="checkbox"  id="details_checkbox" name="include_details" value="true" checked>
+      <label for="details_checkbox">Include event details?</label>
+    </div>
+
+    <input type="submit" />
+
+    </form>
+  </body>
+</html>
+
+

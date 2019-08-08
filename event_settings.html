@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+  </head>
+  <body>
+    <script>
+    
+      function updateFormValue(inputId, value) {
+        let input_el = document.querySelector("#" + inputId);
+          input_el.value = value;
+      }
+      
+      function updateMapSearchURL(location) {
+        document.querySelector("#location_search_link").href =
+          "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(location);
+      }
+
+      function maybeUpdateEndDate(date) {
+        let end_date_el = document.querySelector("#end_date");
+        if (end_date_el.value == "") {
+          end_date_el.value = date;
+        }
+      }
+      
+      function handleSubmit(formObj) {
+        google.script.run.withSuccessHandler(google.script.host.close).saveInvitationSetup(formObj);
+      }
+
+      function fillInInputs(){
+        let params = (new URL(document.location)).searchParams;
+        let form = document.querySelector('#invitation_setup_form')
+        for (let [k,v] of params){
+          form.elements[k].value = v;
+        }
+      }
+
+      // Prevent forms from submitting.
+      function preventFormSubmit() {
+        var forms = document.querySelectorAll('form');
+        for (var i = 0; i < forms.length; i++) {
+          forms[i].addEventListener('submit', function(event) {
+            event.preventDefault();
+          });
+        }
+      }
+      window.addEventListener('load', preventFormSubmit);
+      
+    </script>
+    <form method="get" id="invitation_setup_form" onsubmit="handleSubmit(this);">
+      <div>
+      <h3>Host(s) info:</h3>
+      Name: <input type="text" name="hostName" value="<?=config.hostName?>"/> <br />
+      Email address (optional): <input type="text" name="hostEmail" value="<?=config.hostEmail?>"/> <br />
+      Host physical address (optional, will be in email footer): <input type="text" name="hostAddress" value="<?=config.hostAddress?>"/> <br />
+      </div>
+      <hr/>
+      <div>
+      <h3>Event Info:</h3>
+      Event title: <input type="text" name="title" value="<?=config.title?>"/> <br />
+
+      <h4>When:</h4>
+      Start: <input type="date" name="startDate" onchange="maybeUpdateEndDate(this.value)" value="<?=config.startDate?>"/> <input type="time" name="startTime" value="<?=config.startTime?>"/><br />
+      End: <input type="date" name="endDate" id="end_date" value="<?=config.endDate?>"/> <input type="time" name="endTime" value="<?=config.endTime?>"/><br />
+      Time zone: <input type="text" name="timeZone" value="<?=config.timeZone?>"/> <br />
+
+      <h4>Where:</h4>
+      Location: <input type="text" name="locationName" value="<?=config.locationName?>" oninput="updateMapSearchURL(this.value)"/> <br />
+      Maps link (click <a href="https://www.google.com/maps/search/" target="_blank" id="location_search_link">here</a>,
+      find location, and click "share" to get link): <input type="url" name="locationURL" value="<?=config.locationURL?>"/>
+
+      <h4>What:</h4>
+      Brief description, included above RSVP button: <input type="text" name="summary" value="<?=config.summary?>"><br />
+      Long description (markdown-formatted): <textarea name="details" id="details_input"><?=config.details?></textarea><br />
+      
+      Footnote text (markdown-formatted): <textarea name="footnote"><?=config.footnote?></textarea>
+      </div>
+      <hr/>
+      <div>
+      <h3>Invitation Customization</h3>
+      Email greeting: <input list="greeting-suggestions" id="invitation_greeting" name="invitationGreeting" value="<?=config.invitationGreeting?>" placeholder="Hello"/>
+
+      <datalist id="greeting-suggestions">
+          <option value="Hello">
+          <option value="Hey">
+          <option value="Greetings">
+          <option value="Hola">
+          <option value="Yo">
+      </datalist><br />
+      
+      Header image url: <input type="url" name="headerImageURL" value="<?=config.headerImageURL?>"/><br />
+      </div>
+
+      <input type="submit" />
+
+    </form>
+    <script>
+      fillInInputs();
+    </script>
+  </body>
+</html>

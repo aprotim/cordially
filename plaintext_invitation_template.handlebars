@@ -1,0 +1,13 @@
+{{#if event.greeting}}{{{event.greeting}}}{{else}}Hello{{/if}} {{{guest.name}}}!
+
+{{{message.text}}}
+
+When: {{{event.prettyTime}}}
+Where: {{{event.locationName}}} {{#if event.locationURL}} (Map link: {{{event.locationURL}}}) {{/if}}
+What: {{{event.summary}}}
+
+RSVP Link: {{{guest.rsvpUrl}}}
+
+{{{event.details}}}
+
+{{{event.footnote}}}
